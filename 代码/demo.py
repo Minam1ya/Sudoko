@@ -213,9 +213,9 @@ class SudokuGameGUI:
         hard_button.image = hard_img
         hard_button.grid(row=2,column=4)
 
-        # 返回前页按钮
+        # 输入求解按钮
         back_img = tk.PhotoImage(file='./file/page4_4.png')
-        self.back_button3 = tk.Button(self.page4,image = back_img, command=self.show_page2)
+        self.back_button3 = tk.Button(self.page4,image = back_img, command=self.show_page8)
         self.back_button3.image = back_img
         self.back_button3.grid(row=3, column=4)
         
@@ -282,39 +282,60 @@ class SudokuGameGUI:
         self.back_button5 = tk.Button(self.page7, text="返回题目", command=self.show_page5)
         self.back_button5.grid(row= 3, column=1)
 
+        # 第八个页面 - 输入数独界面
+        self.page8 = tk.Frame(self.window)
+       
+        
+        # 创建数独面板中的单元格
+        global board 
+        board= []
+        for i in range(9):
+            row = []
+            for j in range(9):
+                cell = tk.Entry(self.page8, width=2, font=("Arial", 36),relief='groove',validate="key")
+                cell['validatecommand'] = (cell.register(validate_input), '%P')
+                cell.grid(row=i, column=j, padx=2, pady=2)
+                row.append(cell)
+            board.append(row)
+
+
+        self.enter_button = tk.Button(self.page8,text="进行求解", font=("Arial", 16),command=self.solution)
+        self.enter_button.grid(row=9,column=5,columnspan=2)
+
+        #返回前页按钮
+        self.back_button5 = tk.Button(self.page8, text="返回前页", font=("Arial", 16),command=self.show_page4)
+        self.back_button5.grid(row=9,column=1,columnspan=2)
+
+        #第九个页面 - 求解界面
+        self.page9 = tk.Frame(self.window)
+
+
+        #重新输入按钮
+        self.back_button6 = tk.Button(self.page9, text="重新输入", font=("Arial", 16),command=self.show_page8)
+        self.back_button6.grid(row=9,column=3,columnspan=3)
+
+
 
     # 跳转到第二个页面
     def show_page2(self):
-        self.page1.pack_forget()
         self.page3.pack_forget()
-        self.page4.pack_forget()
-        self.page5.pack_forget()
-        self.page6.pack_forget()
         self.page2.pack()
+
 
     # 跳转到第三个页面
     def show_page3(self):
-        self.page1.pack_forget()
         self.page2.pack_forget()
-        self.page4.pack_forget()
-        self.page5.pack_forget()
-        self.page6.pack_forget()
         self.page3.pack()
 
     # 跳转到第四个页面
     def show_page4(self):
-        self.page1.pack_forget()
         self.page2.pack_forget()
-        self.page3.pack_forget()
         self.page5.pack_forget()
-        self.page6.pack_forget()
+        self.page8.pack_forget()
         self.page4.pack()
 
     # 跳转到第五个页面
     def show_page5(self):
-        self.page1.pack_forget()
-        self.page2.pack_forget()
-        self.page3.pack_forget()
         self.page4.pack_forget()
         self.page6.pack_forget()
         self.page7.pack_forget()
@@ -322,22 +343,19 @@ class SudokuGameGUI:
 
     # 跳转到第六个界面
     def show_page6(self):
-        self.page1.pack_forget()
-        self.page2.pack_forget()
-        self.page3.pack_forget()
-        self.page4.pack_forget()
         self.page5.pack_forget()
         self.page6.pack()
 
     # 跳转到第七个界面
     def show_page7(self):
-        self.page1.pack_forget()
-        self.page2.pack_forget()
-        self.page3.pack_forget()
-        self.page4.pack_forget()
         self.page5.pack_forget()
         self.page7.pack()
 
+    # 跳转到第八个界面
+    def show_page8(self):
+        self.page4.pack_forget()
+        self.page9.pack_forget()
+        self.page8.pack()
 
     # 开始游戏按钮，播放bgm同时跳转到第二页
     def start(self):
@@ -346,9 +364,6 @@ class SudokuGameGUI:
         pygame.mixer.music.set_volume (0.1)
         pygame.mixer.music.play(-1)
         self.page1.pack_forget()
-        self.page3.pack_forget()
-        self.page4.pack_forget()
-        self.page5.pack_forget()
         self.page2.pack()
         
     # 游戏主函数
@@ -371,7 +386,6 @@ class SudokuGameGUI:
                     entry['validatecommand'] = (entry.register(validate_input), '%P')
                     entry.grid(row=i, column=j)
         # 保存答案部分
-
         box2 = tk.Label(self.page7)
         box2.grid(row=index // 3, column=index % 3,)
         for i in range(9):
@@ -379,7 +393,27 @@ class SudokuGameGUI:
                     label = tk.Label(box2, text=board[i][j], font=('Arial', 12), width=2, height=1,relief='groove',bg ='#FFB6C1')
                     label.grid(row=i, column=j)
 
-
+    # 求解函数
+    def solution(self):
+        # 处理数独求解的逻辑
+        # 提取数独问题
+        problem = []
+        for i in range(9):
+            row = []
+            for j in range(9):
+                value = board[i][j].get()
+                if value.isdigit():
+                    row.append(int(value))
+                else:
+                    row.append(0)
+            problem.append(row)
+        solve_sudoku(problem)
+        for i in range(9):
+            for j in range(9):
+                    label = tk.Label(self.page9, text=problem[i][j], font=('Arial', 36), width=2, height=1,relief='groove',bg ='#FFB6C1')
+                    label.grid(row=i, column=j)    
+        self.page8.pack_forget()
+        self.page9.pack()
 
     # 多线程生成九个数独
     # 难度一
@@ -387,9 +421,6 @@ class SudokuGameGUI:
         for index in range(9):
             p = threading.Thread(target=self.createTable(index,1))
             p.start()
-        self.page1.pack_forget()
-        self.page2.pack_forget()
-        self.page3.pack_forget()
         self.page4.pack_forget()
         self.page5.pack()
     
@@ -398,9 +429,6 @@ class SudokuGameGUI:
         for index in range(9):
             p = threading.Thread(target=self.createTable(index,2))
             p.start()
-        self.page1.pack_forget()
-        self.page2.pack_forget()
-        self.page3.pack_forget()
         self.page4.pack_forget()
         self.page5.pack()
 
@@ -409,9 +437,6 @@ class SudokuGameGUI:
         for index in range(9):
             p = threading.Thread(target=self.createTable(index,3))
             p.start()
-        self.page1.pack_forget()
-        self.page2.pack_forget()
-        self.page3.pack_forget()
         self.page4.pack_forget()
         self.page5.pack()
 
