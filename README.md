@@ -1,5 +1,8 @@
 # SudokuGlory
 
+## 更新
+- 增加了查看答案功能
+
 ## 使用指南
 
 - 运行游戏请打开Sudoku Glory,exe
